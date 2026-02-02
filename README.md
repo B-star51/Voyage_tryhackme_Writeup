@@ -27,16 +27,16 @@ PORT     STATE SERVICE VERSION
 
 ### Directory Enumeration
 
-Directory enumeration was performed using `dirsearch`:
+Directory enumeration was performed using dirsearch:  "dirsearch -u http://10.64.166.249 -e php,txt,html,js"
 
-Initial web enumeration revealed multiple directories and files consistent with a Joomla CMS installation. The presence of `/administrator/`, along with standard Joomla folders such as `/components/`, `/modules/`, and `/plugins/`, strongly indicated that the target was running Joomla.
+Initial web enumeration revealed multiple directories and files consistent with a Joomla CMS installation. The presence of /administrator/, along with standard Joomla folders such as /components/, /modules/, and /plugins/, strongly indicated that the target was running Joomla.
 
 Notably discovered paths included:
 
-- `/administrator/` – Joomla administrator login panel
-- `/configuration.php` – Joomla configuration file (contains database credentials if exposed)
-- `/README.txt` and `/LICENSE.txt` – Useful for Joomla version fingerprinting
-- `/robots.txt` – Potentially discloses hidden or restricted paths
+/administrator/ – Joomla administrator login panel
+/configuration.php – Joomla configuration file (contains database credentials if exposed)
+/README.txt and /LICENSE.txt – Useful for Joomla version fingerprinting
+/robots.txt – Potentially discloses hidden or restricted paths
 
 At this stage, the attack surface shifted toward Joomla-specific enumeration and exploitation rather than generic web attacks.
 
@@ -77,7 +77,7 @@ Identifying the exact version allowed for targeted vulnerability research. Jooml
 
 Based on the identified Joomla version (4.2.7), the application was found to be vulnerable to **CVE-2023-23752**, an unauthenticated improper access control vulnerability that allows sensitive configuration data to be retrieved via the Joomla API.
 
-To exploit this, the Metasploit module `auxiliary/scanner/http/joomla_api_improper_access_checks` was used.
+To exploit this, the Metasploit module "auxiliary/scanner/http/joomla_api_improper_access_checks" was used.
 
 
 use auxiliary/scanner/http/joomla_api_improper_access_checks
@@ -135,7 +135,7 @@ While no direct privilege escalation vectors were present within the container i
 SSH_CONNECTION= 10.64.166.249 43906 192.168.100.10 22
 
 Why this matters:
-The `SSH_CONNECTION` environment variable indicated that the container was connected to another system at `192.168.100.10` over SSH. This suggested the presence of an internal network and hinted that the container was being accessed or managed from another host.
+The SSH_CONNECTION environment variable indicated that the container was connected to another system at 192.168.100.10 over SSH. This suggested the presence of an internal network and hinted that the container was being accessed or managed from another host.
 
 ### Internal Network Enumeration and Lateral Movement
 
@@ -166,7 +166,7 @@ Not shown: 999 closed ports
 PORT   STATE SERVICE
 22/tcp open  ssh
 
-The HTTP service on `192.168.100.12:5000` was not directly accessible from the attacker machine. To access it, SSH local port forwarding was used through the previously compromised SSH service.
+The HTTP service on 192.168.100.12:5000 was not directly accessible from the attacker machine. To access it, SSH local port forwarding was used through the previously compromised SSH service.
 
 
 Port Forwarding to our attackbox
@@ -181,7 +181,7 @@ Accessing the forwarded service revealed a login page. Authentication using defa
 
 ### Internal Web Application Enumeration
 
-With access to the internal web application on `http://127.0.0.1:5000`, directory enumeration was performed to identify hidden or restricted endpoints.
+With access to the internal web application on http://127.0.0.1:5000, directory enumeration was performed to identify hidden or restricted endpoints.
 dirsearch -u http://127.0.0.1:5000 -e php,txt,html,js
 
 The enumeration revealed an interesting endpoint:
@@ -239,9 +239,9 @@ CAP_SYS_MODULE
 
 ### Why this is Critical
 
-The presence of `CAP_SYS_MODULE` is particularly dangerous. This capability allows a process to load and unload kernel modules on the host system.
+The presence of CAP_SYS_MODULE is particularly dangerous. This capability allows a process to load and unload kernel modules on the host system.
 
-Since containers share the host kernel, possessing `CAP_SYS_MODULE` effectively breaks container isolation. An attacker can interact directly with the host kernel, leading to full host compromise and bypassing all Linux security mechanisms and container boundaries.
+Since containers share the host kernel, possessing CAP_SYS_MODULE effectively breaks container isolation. An attacker can interact directly with the host kernel, leading to full host compromise and bypassing all Linux security mechanisms and container boundaries.
 
 
 
